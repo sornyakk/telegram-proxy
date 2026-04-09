@@ -11,23 +11,18 @@ def home():
 @app.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'])
 def proxy(path):
     try:
-        target_url = 'https://web.telegram.org' + request.full_path
+        url = request.url
         
-        headers = {}
-        for key, value in request.headers:
-            if key.lower() == 'host':
-                headers['Host'] = 'web.telegram.org'
-            elif key.lower() not in ['content-length']:
-                headers[key] = value
+        headers = {k: v for k, v in request.headers.items() if k.lower() != 'host'}
         
         response = requests.request(
             method=request.method,
-            url=target_url,
+            url=url,
             headers=headers,
             data=request.get_data(),
             cookies=request.cookies,
             allow_redirects=False,
-            timeout=30
+            timeout=60
         )
         
         excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
@@ -37,4 +32,8 @@ def proxy(path):
         return Response(response.content, response.status_code, response_headers)
     
     except Exception as e:
-        return str(e), 500
+        return f"Proxy error: {e}", 500
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
