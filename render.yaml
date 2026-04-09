@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: telegram-proxy-server
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PROXY_PORT
+        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.9.18
+    healthCheckPath: /
+    autoDeploy: true
